@@ -11,8 +11,9 @@ const shopRoutes = require('./routes/shop.js')
 const app = express()
 
 app.engine('hbs', expressHbs({
-  defaultLayout: null,
-  extname: 'hbs'
+  layoutsDir: 'views/layouts/',
+  defaultLayout: 'main-layout',
+  extname: 'hbs',
 }))
 app.set('view engine', 'hbs')
 app.set('views', 'views')
