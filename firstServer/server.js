@@ -1,15 +1,20 @@
 const path = require("path")
 
 const express = require("express")
+const bodyParser = require("body-parser")
+const expressHbs = require("express-handlebars")
 
 const adminData = require('./routes/admin.js')
 const shopRoutes = require('./routes/shop.js')
 
-const bodyParser = require("body-parser")
 
 const app = express()
 
-app.set('view engine', 'pug')
+app.engine('hbs', expressHbs({
+  defaultLayout: null,
+  extname: 'hbs'
+}))
+app.set('view engine', 'hbs')
 app.set('views', 'views')
 
 app.use(bodyParser.urlencoded({extended: false}))
