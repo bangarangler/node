@@ -1,6 +1,5 @@
 const Product = require('../models/product');
 
-
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
@@ -14,7 +13,14 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product = new Product(title, price, description, imageUrl);
+  const product = new Product(
+    title,
+    price,
+    description,
+    imageUrl,
+    null,
+    req.user._id,
+  );
   product
     .save()
     .then(result => {
@@ -31,14 +37,15 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDescription = req.body.description;
-      const product = new Product(
-        updatedTitle,
-        updatedPrice,
-        updatedDescription,
-        updatedImageUrl,
-        prodId
-      )
-  product.save()
+  const product = new Product(
+    updatedTitle,
+    updatedPrice,
+    updatedDescription,
+    updatedImageUrl,
+    prodId,
+  );
+  product
+    .save()
     .then(result => {
       console.log('updated products...');
       res.redirect('/admin/products');
@@ -81,11 +88,11 @@ exports.getProducts = (req, res, next) => {
 };
 
 exports.postDeleteProduct = (req, res, next) => {
-const prodId = req.body.productId;
+  const prodId = req.body.productId;
   Product.deleteById(prodId)
-.then(() => {
-console.log('DESTROYED PRODUCT');
-res.redirect('/admin/products');
-})
-.catch(err => console.log(err));
+    .then(() => {
+      console.log('DESTROYED PRODUCT');
+      res.redirect('/admin/products');
+    })
+    .catch(err => console.log(err));
 };
