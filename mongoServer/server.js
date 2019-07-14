@@ -14,6 +14,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+
 const adminRoutes = require('./routes/admin.js');
 const shopRoutes = require('./routes/shop.js');
 
@@ -21,13 +22,14 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findById('5d2b4242addfab182f27bc5c')
+  User.findById('5d2b43839d95c218c1dfc935')
     .then(user => {
       req.user = user;
       next();
     })
     .catch(err => console.log(err));
 });
+
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
