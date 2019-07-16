@@ -8,8 +8,8 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 
 const errorController = require('./controllers/error.js');
-//const mongoConnect = require('./util/database.js').mongoConnect;
 const User = require('./models/user.js');
+
 const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${
   process.env.MONGO_PW
 }@clusternodejs-jp-j5zcw.mongodb.net/shop`;
@@ -45,7 +45,7 @@ app.use((req,res,next) => {
   User.findById(req.session.user._id)
     .then(user => {
       req.user = user;
-      next()
+      next();
     })
     .catch(err => console.log(err))
 })
