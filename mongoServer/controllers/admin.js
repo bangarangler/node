@@ -1,6 +1,7 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const fileHelper = require('../util/file.js');
 
-const { validationResult } = require('express-validator')
+const {validationResult} = require('express-validator');
 
 const Product = require('../models/product');
 
@@ -11,7 +12,7 @@ exports.getAddProduct = (req, res, next) => {
     editing: false,
     hasError: false,
     errorMessage: null,
-    validationErrors: []
+    validationErrors: [],
   });
 };
 
@@ -29,11 +30,11 @@ exports.postAddProduct = (req, res, next) => {
       product: {
         title: title,
         price: price,
-        description: description
+        description: description,
       },
       errorMessage: 'Attached file is not an image.',
-      validationErrors: []
-    })
+      validationErrors: [],
+    });
   }
   const errors = validationResult(req);
 
@@ -46,11 +47,11 @@ exports.postAddProduct = (req, res, next) => {
       product: {
         title: title,
         price: price,
-        description: description
+        description: description,
       },
       errorMessage: errors.array()[0].msg,
-      validationErrors: errors.array()
-    })
+      validationErrors: errors.array(),
+    });
   }
 
   const imageUrl = image.path;
@@ -70,10 +71,10 @@ exports.postAddProduct = (req, res, next) => {
       res.redirect('/admin/products');
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
-    })
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.getEditProduct = (req, res, next) => {
@@ -94,14 +95,14 @@ exports.getEditProduct = (req, res, next) => {
         product: product,
         hasError: false,
         errorMessage: null,
-        validationErrors: []
+        validationErrors: [],
       });
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
-    })
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.postEditProduct = (req, res, next) => {
@@ -123,11 +124,11 @@ exports.postEditProduct = (req, res, next) => {
         title: updatedTitle,
         price: updatedPrice,
         description: updatedDescription,
-        _id: prodId
+        _id: prodId,
       },
       errorMessage: errors.array()[0].msg,
-      validationErrors: errors.array()
-    })
+      validationErrors: errors.array(),
+    });
   }
   Product.findById(prodId)
     .then(product => {
@@ -138,6 +139,7 @@ exports.postEditProduct = (req, res, next) => {
       product.price = updatedPrice;
       product.description = updatedDescription;
       if (image) {
+        fileHelper.deleteFile(product.imageUrl);
         product.imageUrl = image.path;
       }
       return product.save().then(result => {
@@ -147,25 +149,25 @@ exports.postEditProduct = (req, res, next) => {
     })
     .catch(err => {
       //return res.status(500).render('admin/edit-product', {
-        //pageTitle: 'Add Product',
-        //path: '/admin/add-product',
-        //editing: false,
-        //hasError: true,
-        //product: {
-          //title: title,
-          //imageUrl: imageUrl,
-          //price: price,
-          //description: description
-        //},
-        //errorMessage: 'Database operation failed, please try again.',
-        //validationErrors: []
+      //pageTitle: 'Add Product',
+      //path: '/admin/add-product',
+      //editing: false,
+      //hasError: true,
+      //product: {
+      //title: title,
+      //imageUrl: imageUrl,
+      //price: price,
+      //description: description
+      //},
+      //errorMessage: 'Database operation failed, please try again.',
+      //validationErrors: []
       //});
       //res.redirect('/500');
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
-    })
-    };
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
 
 exports.getProducts = (req, res, next) => {
   Product.find({userId: req.user._id})
@@ -180,21 +182,30 @@ exports.getProducts = (req, res, next) => {
       });
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
-    })};
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.deleteOne({_id: prodId, userId: req.user._id})
+  Product.findById(prodId)
+    .then(product => {
+      if (!product) {
+        return next(new Error('Product not found.'));
+        Product.deleteOne({_id: prodId, userId: req.user._id});
+      }
+      fileHelper.deleteFile(product.imageUrl);
+      return Product.deleteOne({_id: prodId, userId: req.user._id});
+    })
     .then(() => {
       console.log('DESTROYED PRODUCT');
       res.redirect('/admin/products');
     })
     .catch(err => {
-      const error = new Error(err)
-      error.httpStatusCode = 500
-      return next(error)
-    })
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
