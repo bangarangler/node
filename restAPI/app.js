@@ -1,6 +1,8 @@
+require('dotenv').config()
 const express = require('express');
 //const cors = require('cors');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const feedRoutes = require('./routes/feed.js');
 
@@ -22,4 +24,6 @@ app.use((req, res, next) => {
 
 app.use('/feed', feedRoutes);
 
-app.listen(8080);
+mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@restnode-vrbbu.mongodb.net/messages`, { useNewUrlParser: true }).then(result => {
+  app.listen(8080);
+}).catch(err => console.log(err))
