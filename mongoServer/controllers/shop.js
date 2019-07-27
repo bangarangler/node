@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PDFdocument = require('pdfkit');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const Product = require('../models/product.js');
 const Order = require('../models/order.js');
@@ -165,10 +166,18 @@ exports.getCheckout = (req, res, next) => {
 };
 
 exports.postOrder = (req, res, next) => {
+  const token = req.body.stripeToken;
+  let totalSum = 0;
+  let formatTotal;
+
   req.user
     .populate('cart.items.productId')
     .execPopulate()
     .then(user => {
+      user.cart.items.forEach(p => {
+        totalSum += p.quantity * p.productId.price
+        formatTotal = Math.round(totalSum.toFixed(2) * 100)
+      })
       console.log(user.cart.items);
       const products = user.cart.items.map(i => {
         return {quantity: i.quantity, product: {...i.productId._doc}};
@@ -183,6 +192,13 @@ exports.postOrder = (req, res, next) => {
       return order.save();
     })
     .then(result => {
+      const charge = stripe.charges.create({
+        amount: formatTotal,
+        currency: 'usd',
+        description: 'Demo Order',
+        source: token,
+        metadata: { order_id: result._id.toString() }
+      })
       return req.user.clearCart();
     })
     .then(() => {
