@@ -18,13 +18,11 @@ exports.getPosts = (req, res, next) => {
         .limit(perPage);
     })
     .then(posts => {
-      res
-        .status(200)
-        .json({
-          message: 'Fetched posts successfully.',
-          posts: posts,
-          totalItems: totalItems,
-        });
+      res.status(200).json({
+        message: 'Fetched posts successfully.',
+        posts: posts,
+        totalItems: totalItems,
+      });
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -60,15 +58,17 @@ exports.createPost = (req, res, next) => {
     .save()
     .then(result => {
       return User.findById(req.userId);
-    }).then(user => {
+    })
+    .then(user => {
       creator = user;
       user.posts.push(post);
-      return user.save()
-    }).then(result => {
+      return user.save();
+    })
+    .then(result => {
       res.status(201).json({
         message: `Post created successfully!`,
         post: post,
-        creator: { _id: creator._id, name: creator.name }
+        creator: {_id: creator._id, name: creator.name},
       });
     })
     .catch(err => {
@@ -125,7 +125,7 @@ exports.updatePost = (req, res, next) => {
         throw error;
       }
       if (post.creator.toString() !== req.userId) {
-        const error = new Error('Not authorized')
+        const error = new Error('Not authorized');
         error.statusCode = 403;
         throw error;
       }
@@ -158,7 +158,7 @@ exports.deletePost = (req, res, next) => {
         throw error;
       }
       if (post.creator.toString() !== req.userId) {
-        const error = new Error('Not authorized')
+        const error = new Error('Not authorized');
         error.statusCode = 403;
         throw error;
       }
@@ -167,7 +167,13 @@ exports.deletePost = (req, res, next) => {
       return Post.findByIdAndRemove(postId);
     })
     .then(result => {
-      console.log(result);
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      user.posts.pull(postId);
+      return user.save();
+    })
+    .then(result => {
       res.status(200).json({message: 'Deleted post.'});
     })
     .catch(err => {
