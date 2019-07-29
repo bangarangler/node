@@ -25,8 +25,8 @@ class Feed extends Component {
   componentDidMount() {
     fetch('http://localhost:8080/auth/status', {
       headers: {
-        Authorization: `Bearer ${this.props.token}`
-      }
+        Authorization: `Bearer ${this.props.token}`,
+      },
     })
       .then(res => {
         if (res.status !== 200) {
@@ -40,8 +40,29 @@ class Feed extends Component {
       .catch(this.catchError);
 
     this.loadPosts();
-    openSocket(`http://localhost:8080`);
+    const socket = openSocket(`http://localhost:8080`);
+    socket.on('posts', data => {
+      if (data.action === 'create') {
+        this.addPost(data.post);
+      }
+    });
   }
+
+  addPost = post => {
+    this.setState(prevState => {
+      const updatedPosts = [...prevState.posts];
+      if (prevState.postPage === 1) {
+        if (prevState.posts.length >= 2) {
+          updatedPosts.pop();
+        }
+        updatedPosts.unshift(post);
+      }
+      return {
+        posts: updatedPosts,
+        totalPosts: prevState.totalPosts + 1,
+      };
+    });
+  };
 
   loadPosts = direction => {
     if (direction) {
@@ -88,11 +109,11 @@ class Feed extends Component {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${this.props.token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        status: this.state.status
-      })
+        status: this.state.status,
+      }),
     })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
@@ -170,8 +191,6 @@ class Feed extends Component {
               p => p._id === prevState.editPost._id,
             );
             updatedPosts[postIndex] = post;
-          } else if (prevState.posts.length < 2) {
-            updatedPosts = prevState.posts.concat(post);
           }
           return {
             posts: updatedPosts,
