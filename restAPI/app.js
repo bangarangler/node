@@ -6,10 +6,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const graphqlhttp = require('express-graphql')
+const graphqlhttp = require('express-graphql');
 
-const graphqlSchema = require('./graphql/schema.js')
-const graphqlResolver = require('./graphql/resolvers.js')
+const graphqlSchema = require('./graphql/schema.js');
+const graphqlResolver = require('./graphql/resolvers.js');
+const auth = require('./middleware/auth.js');
 
 //const feedRoutes = require('./routes/feed.js');
 //const authRoutes = require('./routes/auth.js');
@@ -56,24 +57,29 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/graphql', graphqlhttp({
-  schema: graphqlSchema,
-  rootValue: graphqlResolver,
-  graphiql: true,
-  formatError(err) {
-    if (!err.originalError) {
-      return err;
-    }
-    const data = err.originalError.data;
-    const message = err.message || 'An error occured.';
-    const code = err.originalError.code || 500;
-    return {
-      message: message,
-      status: code,
-      data: data
-    }
-  }
-}))
+app.use(auth);
+
+app.use(
+  '/graphql',
+  graphqlhttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+    graphiql: true,
+    formatError(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const data = err.originalError.data;
+      const message = err.message || 'An error occured.';
+      const code = err.originalError.code || 500;
+      return {
+        message: message,
+        status: code,
+        data: data,
+      };
+    },
+  }),
+);
 
 //app.use('/feed', feedRoutes);
 //app.use('/auth', authRoutes);
@@ -98,7 +104,7 @@ mongoose
     //const server = app.listen(8080);
     //const io = require('./socket').init(server);
     //io.on('connection', socket => {
-      //console.log('Client connected')
+    //console.log('Client connected')
     //})
   })
   .catch(err => console.log(err));
