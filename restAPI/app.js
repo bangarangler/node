@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const path = require('path');
-const fs = require('fs');
 const express = require('express');
 //const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -12,6 +11,7 @@ const graphqlhttp = require('express-graphql');
 const graphqlSchema = require('./graphql/schema.js');
 const graphqlResolver = require('./graphql/resolvers.js');
 const auth = require('./middleware/auth.js');
+const { clearImage } = require('./util/file.js');
 
 //const feedRoutes = require('./routes/feed.js');
 //const authRoutes = require('./routes/auth.js');
@@ -123,7 +123,3 @@ mongoose
   })
   .catch(err => console.log(err));
 
-const clearImage = filePath => {
-  filePath = path.join(__dirname, '..', filePath);
-  fs.unlink(filePath, err => console.log(err));
-}
