@@ -4,3 +4,6 @@ D.S. Store
 DS Store
 .env
 nodemon.json
+server.key
+server.cert
+access.log
