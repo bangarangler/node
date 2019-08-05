@@ -1,0 +1,5 @@
+::1 - - [05/Aug/2019:18:34:35 +0000] "GET / HTTP/1.1" 200 - "http://localhost:3000/orders" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko/20100101 Firefox/68.0"
+::1 - - [05/Aug/2019:18:34:35 +0000] "GET /css/main.css HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko/20100101 Firefox/68.0"
+::1 - - [05/Aug/2019:18:34:35 +0000] "GET /js/main.js HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko/20100101 Firefox/68.0"
+::1 - - [05/Aug/2019:18:34:35 +0000] "GET /css/product.css HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko/20100101 Firefox/68.0"
+::1 - - [05/Aug/2019:18:34:35 +0000] "GET /images/2019-07-26T13:52:36.281Z-131752.jpg HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko/20100101 Firefox/68.0"

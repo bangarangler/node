@@ -1,5 +1,6 @@
 require('dotenv').config();
 const path = require('path');
+const fs = require('fs');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -12,12 +13,15 @@ const multer = require('multer');
 
 const errorController = require('./controllers/error.js');
 const shopController = require('./controllers/shop.js');
-const isAuth = require('./middleware/is-auth.js')
+const isAuth = require('./middleware/is-auth.js');
 const User = require('./models/user.js');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 
 const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${
   process.env.MONGO_PW
-}@clusternodejs-jp-j5zcw.mongodb.net/shop`;
+}@clusternodejs-jp-j5zcw.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`;
 
 const app = express();
 const store = new MongoDBStore({
@@ -53,6 +57,15 @@ app.set('views', 'views');
 const adminRoutes = require('./routes/admin.js');
 const shopRoutes = require('./routes/shop.js');
 const authRoutes = require('./routes/auth.js');
+
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, 'access.log'),
+  {flags: 'a'}
+);
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', {stream: accessLogStream}));
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'));
@@ -91,13 +104,13 @@ app.use((req, res, next) => {
     });
 });
 
-app.post('/create-order', isAuth,  shopController.postOrder);
+app.post('/create-order', isAuth, shopController.postOrder);
 
 app.use(csrfProtection);
 app.use((req, res, next) => {
   res.locals.csrfToken = req.csrfToken();
-  next()
-})
+  next();
+});
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -109,7 +122,7 @@ app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
   //res.redirect('/500')
-  console.log(error)
+  console.log(error);
   res.status(500).render('500', {
     pageTitle: 'Error!',
     path: '/500',
@@ -120,7 +133,7 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(MONGODB_URI, {useNewUrlParser: true})
   .then(result => {
-    app.listen(3000);
+    app.listen(process.env.PORT || 3000);
   })
   .catch(err => {
     console.log(err);
