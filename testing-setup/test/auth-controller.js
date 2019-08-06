@@ -1,5 +1,7 @@
+require('dotenv').config();
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const mongoose = require('mongoose');
 
 const User = require('../models/user.js');
 const AuthController = require('../controllers/auth.js');
@@ -12,9 +14,9 @@ describe('Auth Controller - Login', function() {
     const req = {
       body: {
         email: 'test@test.com',
-        password: 'testing'
-      }
-    }
+        password: 'testing',
+      },
+    };
 
     AuthController.login(req, {}, () => {}).then(result => {
       expect(result).to.be.an('error');
@@ -23,5 +25,53 @@ describe('Auth Controller - Login', function() {
     });
 
     User.findOne.restore();
-  })
-})
+  });
+
+  it('should send a response with a valid user status for an existing user', function(done) {
+    mongoose
+      .connect(
+        `mongodb+srv://${process.env.MONGO_USER}:${
+          process.env.MONGO_PW
+        }@clusternodejs-jp-j5zcw.mongodb.net/${
+          process.env.MONGO_TEST_DATABASE
+        }`,
+        {useNewUrlParser: true},
+      )
+      .then(result => {
+        const user = new User({
+          email: 'test@test.com',
+          password: 'testing',
+          name: 'Test',
+          posts: [],
+          _id: '5c0f66b979af55031b34728a',
+        });
+        return user.save();
+      })
+      .then(() => {
+        const req = {userId: '5c0f66b979af55031b34728a'};
+        const res = {
+          statusCode: 500,
+          userStatus: null,
+          status: function(code) {
+            this.statusCode = code;
+            return this;
+          },
+          json: function(data) {
+            this.userStatus = data.status;
+          },
+        };
+        AuthController.getUserStatus(req, res, () => {}).then(() => {
+          expect(res.statusCode).to.be.equal(200);
+          expect(res.userStatus).to.be.equal('I am new!');
+          User.deleteMany({})
+            .then(() => {
+              return mongoose.disconnect();
+            })
+            .then(() => {
+              done();
+            });
+        });
+      })
+      .catch(err => console.log(err));
+  });
+});

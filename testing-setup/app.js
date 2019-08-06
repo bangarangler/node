@@ -1,3 +1,4 @@
+require('dotenv').config()
 const path = require('path');
 
 const express = require('express');
@@ -61,7 +62,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@cluster0-ntrwp.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@clusternodejs-jp-j5zcw.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`
   )
   .then(result => {
     app.listen(8080);
